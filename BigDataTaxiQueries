@@ -1,0 +1,346 @@
+The Following SQL statements will give a general sampling 
+of our analysis. Our queries were ran on Google BigQuery
+after uploading the data to Google Cloud Storage. Google 
+BigQuery was used due to its ease of user, speed, and ability
+for multiple group members to run simulataneous queries from
+their own computer. The 2013 dataset was originally upload by
+Google Software Engineer Jason Hall and is accessbile via the 
+table format: 
+
+[833682135931:nyctaxi.trip_data] and 
+[833682135931:nyctaxi.trip_fare] 
+
+for the trip data and trip fare datasets respectively. 2012 was
+uploaded and hosted by our group and can be accessible via:
+
+[golden-tenure-654:nyctaxi2012.trip_data_2012] and 
+[golden-tenure-654:nyctaxi2012.trip_fare_2012]
+
+Starting with basic queries ran against the 2012 dataset:
+The total number of trips in 2012:
+
+SELECT 
+  COUNT(dropoff_datetime)
+FROM
+  [golden-tenure-654:nyctaxi2012.trip_data_2012]
+WHERE 
+  (FLOAT(pickup_latitude) !=0) AND (FLOAT(dropoff_latitude) != 0) AND
+  (FLOAT(pickup_longitude) != 0) AND (FLOAT(dropoff_longitude) != 0)
+
+and 2013:
+
+SELECT
+  COUNT(dropoff_datetime)
+FROM
+  [833682135931:nyctaxi.trip_data]
+WHERE
+  (FLOAT(pickup_latitude) !=0) AND (FLOAT(dropoff_latitude) != 0) AND
+  (FLOAT(pickup_longitude) != 0) AND (FLOAT(dropoff_longitude) != 0)
+
+As we were interested in looking at Taxi activity regarding the three
+airports. We could begin with looking at the total number of trips from JFK 
+in 2012. In order to accomplish this, a bounding box was placed around the
+airport and pickups and dropoffs were restricted to lie within the GPS coordinates.
+For JFK we used 40.640668 and 40.651381 as our bounding latitudes; -73.794694 and
+-73.776283 for longitude. This makes the query:
+
+
+SELECT 
+  COUNT(dropoff_datetime)
+FROM
+  [golden-tenure-654:nyctaxi2012.trip_data_2012]
+WHERE 
+ FLOAT(pickup_latitude) < 40.651381   AND FLOAT(pickup_latitude) > 40.640668
+  AND FLOAT(pickup_longitude) < -73.776283   AND FLOAT(pickup_longitude) > -73.794694
+
+For investigating the trips to JFK, the latitude and longitude could be 
+switched to dropoff:
+
+SELECT 
+  COUNT(dropoff_datetime)
+FROM
+  [golden-tenure-654:nyctaxi2012.trip_data_2012]
+WHERE 
+ FLOAT(dropoff_latitude) < 40.651381   AND FLOAT(dropoff_latitude) > 40.640668
+  AND FLOAT(dropoff_longitude) < -73.776283   AND FLOAT(dropoff_longitude) > -73.794694
+
+Due to JFK's fixed fare price, averaging the total amount paid between JFK and 
+Manhattan would expect to result in the fixed fare rate, plus and taxes, 
+surcharges, and tolls passed along to the customer. While exploring whether the prices 
+were fair, areas in close proximity to JFK were used as a proxy to get data on total amount 
+paid. These areas consisting of Howard Beach, Laurelton, and South Jamaica were used for the
+amount calculations in the report. Their coordinates are shown below:
+
+Howard Beach:
+40.65, -73.83
+40.65, -73.85
+40.67, -73.85
+40.67, -73.83
+
+South Jamaica;
+40.67, -73.81
+40.67, -73.77
+40.70, -73.77
+40.70, -73.81
+
+Laurelton: 
+40.66, -73.76
+40.66, -73.72
+40.69, -73.72
+40.69, -73.76
+
+ Similarly for other areas of interests we used the following coordinates:
+East Village: 
+40.73412, -73.98974
+40.73412, -73.97189
+40.71877, -73.97189
+40.71877, -73.98974
+
+Financial:
+40.70123324, -74.0177936
+40.70123324, -74.0003872
+40.71219924, -74.0003872
+40.71219924, -74.0177936
+
+Rockefeller:
+40.76042322, -73.9816761
+40.75704251, -73.9816761
+40.75704251, -73.9757967
+40.76042322, -73.9757967
+
+Madison Sq Garden:
+40.75226253995, -73.99570940
+40.75226253995, -73.991074561
+40.74882568, -73.99570940
+40.74882568, -73.991074561
+
+Barclay's Center:
+40.681712, -73.977685
+40.684114, -73.977685
+40.681712, -73.972921
+40.684114, -73.972921
+
+Macy's:
+40.749630, -73.987727
+40.751646,  -73.987727
+40.751646, -73.990709
+40.74963, -73.990709
+
+Union Square:
+40.738055, -73.992920
+40.733974, -73.992920
+40.733974, -73.988457
+40.738055, -73.988457
+
+Columbus Circle:
+40.769199, -73.9831996
+40.769199, -73.980689
+40.767135, -73.980689
+40.767135, -73.9831996
+
+Manhattan used five bounding boxes, the critical corners for each box:
+
+Box1: 
+40.76104, -74.02108
+40.70120, -74.00082
+
+Box2
+40.79042, -74.00082
+40.70901, -73.97061
+
+Box3:
+40.81732, -73.98365
+40.74427, -73.96031
+
+Box4:
+40.81846, -73.96087
+40.75922, -73.94434
+
+Box5:
+40.81859, -73.94593
+40.77297, -73.92791
+
+
+Bronx:
+40.8, -73.79
+40.8, -73.93
+40.9, -73.79
+40.9, -73.93
+
+Brooklyn:
+Box 1:
+40.698, -74.046
+40.698, -73.85
+40.54, -73.85
+40.54, -74.046
+Box 2:
+40.735, -73.92
+40.735, -73.97
+40.698, -73.92 
+40.698, -73.97 
+
+Queens (Two boxes):
+40.775, -73.923
+40.775, -73.73
+40.69, -73.73
+40.69, -73.923
+
+40.69, -73.872
+40.69, -73.75
+40.57, -73.75
+40.57, -73.872
+
+Staten Island (Two boxes): 
+40.64, -74.2
+40.64, -74.05
+40.558, -74.2
+40.558, -74.05
+
+40.558, -74.25
+40.558, -74.1
+40.5, -74.25
+40.5, -74.1
+
+Additional points looked at was directly at the exit of the Queens Midtown Tunnel
+and near the New York Hilton Midtown:
+
+Queens Midtown Tunnel: 
+40.75, -73.98
+40.75, -73.975
+40.745, -73.975
+40.745, -73.98
+
+New York Hilton Midtown:
+40.763, -73.98
+40.763. -73.978
+40.760, -73.98
+40.760, -73.978
+
+
+To determine the most popular destinations from JFK in 2012:
+
+SELECT 
+  ROUND(FLOAT(dropoff_latitude),3) AS drop_lat, ROUND(FLOAT(dropoff_longitude),3) AS drop_long, 
+  COUNT(HOUR(TIMESTAMP(pickup_datetime))) AS pickups
+FROM 
+  [golden-tenure-654:nyctaxi2012.trip_data_2012] AS A
+WHERE 
+  FLOAT(pickup_latitude) < 40.651381   AND FLOAT(pickup_latitude) > 40.640668
+  AND FLOAT(pickup_longitude) < -73.776283   AND FLOAT(pickup_longitude) > -73.794694
+  AND 
+  ((FLOAT(A.dropoff_latitude) < 40.76104   AND FLOAT(A.dropoff_latitude) > 40.70120
+  AND FLOAT(A.dropoff_longitude) < -73.00082   AND FLOAT(A.dropoff_longitude) > -73.02108) 
+OR (FLOAT(A.dropoff_latitude) < 40.79042   AND FLOAT(A.dropoff_latitude) > 40.70901
+  AND FLOAT(A.dropoff_longitude) < -73.97061   AND FLOAT(A.dropoff_longitude) > -74.00082) 
+OR (FLOAT(A.dropoff_latitude) < 40.81732   AND FLOAT(A.dropoff_latitude) > 40.74427
+  AND FLOAT(A.dropoff_longitude) < -73.96031   AND FLOAT(A.dropoff_longitude) > -73.98365) 
+OR (FLOAT(A.dropoff_latitude) < 40.81846   AND FLOAT(A.dropoff_latitude) > 40.75922
+  AND FLOAT(A.dropoff_longitude) < -73.94434   AND FLOAT(A.dropoff_longitude) > -73.96087) 
+OR (FLOAT(A.dropoff_latitude) < 40.81859   AND FLOAT(A.dropoff_latitude) > 40.77297
+  AND FLOAT(A.dropoff_longitude) < -73.92791   AND FLOAT(A.dropoff_longitude) > -73.94593))
+AND
+  FLOAT(trip_distance) > 10
+GROUP BY 
+  drop_lat, drop_long
+ORDER BY
+  pickups DESC
+
+
+and origins:
+
+SELECT 
+  ROUND(FLOAT(pickup_latitude),3) AS pick_lat, ROUND(FLOAT(pickup_longitude),3) AS pick_long, 
+  COUNT(HOUR(TIMESTAMP(pickup_datetime))) AS pickups
+FROM 
+  [golden-tenure-654:nyctaxi2012.trip_data_2012] AS A
+WHERE 
+  FLOAT(dropoff_latitude) < 40.651381   AND FLOAT(dropoff_latitude) > 40.640668
+  AND FLOAT(dropoff_longitude) < -73.776283   AND FLOAT(dropoff_longitude) > -73.794694
+  AND 
+  ((FLOAT(A.pickup_latitude) < 40.76104   AND FLOAT(A.pickup_latitude) > 40.70120
+  AND FLOAT(A.dropoff_longitude) < -73.00082   AND FLOAT(A.pickup_longitude) > -73.02108) 
+OR (FLOAT(A.pickup_latitude) < 40.79042   AND FLOAT(A.pickup_latitude) > 40.70901
+  AND FLOAT(A.pickup_longitude) < -73.97061   AND FLOAT(A.pickup_longitude) > -74.00082) 
+OR (FLOAT(A.pickup_latitude) < 40.81732   AND FLOAT(A.pickup_latitude) > 40.74427
+  AND FLOAT(A.pickup_longitude) < -73.96031   AND FLOAT(A.pickup_longitude) > -73.98365) 
+OR (FLOAT(A.pickup_latitude) < 40.81846   AND FLOAT(A.pickup_latitude) > 40.75922
+  AND FLOAT(A.pickup_longitude) < -73.94434   AND FLOAT(A.pickup_longitude) > -73.96087) 
+OR (FLOAT(A.pickup_latitude) < 40.81859   AND FLOAT(A.pickup_latitude) > 40.77297
+  AND FLOAT(A.pickup_longitude) < -73.92791   AND FLOAT(A.pickup_longitude) > -73.94593))
+AND
+  FLOAT(trip_distance) > 10
+GROUP BY 
+  pick_lat, pick_long
+ORDER BY
+  pickups DESC
+
+
+Using the proxy for JFK to get the distribution of total amount paid from JFK to the
+New York Midtown Hilton (the most popular destination):
+
+SELECT ROUND(FLOAT(amount), -1) AS AproxJFKtoTopAvgAmount2013, COUNT(FLOAT(amount)) AS CountJFK
+FROM
+(SELECT 
+  hack_license as Ahack, pickup_datetime as Adate
+FROM 
+  [833682135931:nyctaxi.trip_data] AS A
+WHERE 
+  ((FLOAT(A.dropoff_latitude) < 40.69   AND FLOAT(A.dropoff_latitude) > 40.66
+  AND FLOAT(A.dropoff_longitude) < -73.72  AND FLOAT(A.dropoff_longitude) > -73.76)
+  OR (FLOAT(A.dropoff_latitude) < 40.70   AND FLOAT(A.dropoff_latitude) > 40.67
+  AND FLOAT(A.dropoff_longitude) < -73.77  AND FLOAT(A.dropoff_longitude) > -73.81)
+  OR (FLOAT(A.dropoff_latitude) < 40.67   AND FLOAT(A.dropoff_latitude) > 40.65
+  AND FLOAT(A.dropoff_longitude) < -73.83  AND FLOAT(A.dropoff_longitude) > -73.85))
+AND 
+  (FLOAT(A.pickup_latitude) < 40.7625   AND FLOAT(A.pickup_latitude) > 40.76050
+  AND FLOAT(A.pickup_longitude) < -73.978  AND FLOAT(A.pickup_longitude) > -73.98)
+) AA
+LEFT JOIN EACH(
+SELECT
+hack_license as Bhack, total_amount as amount, pickup_datetime as Bdate
+FROM
+  [833682135931:nyctaxi.trip_fare] AS B
+) BB
+ON 
+  Ahack = Bhack AND Adate = Bdate 
+GROUP BY 
+  AproxJFKtoTopAvgAmount2013
+ORDER BY
+  CountJFK DESC
+
+
+Looking at the hourly flux rate into East Village on March 2nd, 2013
+Select dropoffhour as hour, (A.dropoffs - B.pickups) as mar_2nd_net_influx
+FROM (
+SELECT 
+  HOUR(TIMESTAMP(dropoff_datetime)) AS dropoffhour, COUNT(HOUR(TIMESTAMP(dropoff_datetime))) AS dropoffs
+FROM [833682135931:nyctaxi.trip_data]
+
+  WHERE
+  (MONTH(DATE(dropoff_datetime)) = 3 AND DAY(DATE(dropoff_datetime)) = 2) AND
+  (pickup_latitude != "0" AND  dropoff_latitude != "0") AND
+  CAST(dropoff_latitude AS FLOAT) > 40.71877 AND CAST(dropoff_latitude AS FLOAT) < 40.73412 AND
+  CAST(dropoff_longitude AS FLOAT) > -73.98974 AND CAST(dropoff_longitude AS FLOAT) < -73.97189
+GROUP BY
+  dropoffhour
+) A
+LEFT JOIN(
+SELECT 
+  HOUR(TIMESTAMP(pickup_datetime)) AS pickuphour, COUNT(HOUR(TIMESTAMP(pickup_datetime))) AS pickups
+FROM [833682135931:nyctaxi.trip_data]
+  WHERE
+  (MONTH(DATE(dropoff_datetime)) = 3 AND DAY(DATE(dropoff_datetime)) = 2) AND
+  (pickup_latitude != "0" AND  dropoff_latitude != "0") AND
+  CAST(pickup_latitude AS FLOAT) > 40.71877 AND CAST(pickup_latitude AS FLOAT) < 40.73412 AND
+  CAST(pickup_longitude AS FLOAT) > -73.98974 AND CAST(pickup_longitude AS FLOAT) < -73.97189
+GROUP BY
+  pickuphour
+) B
+ON A.dropoffhour = B.pickuphour
+ORDER BY
+  hour
+
+
+
+
+
